@@ -8,7 +8,7 @@
 
 #
 
-import pygame, random
+import pygame
 
 #-----------------------------------------------------------------------
 #Estadares para la interfaz:
@@ -16,8 +16,8 @@ import pygame, random
 #Falta buscar mas sobre como crearemos la interfaz
 
 
-diametro_anchura = 800
-diametro_altura = 600
+diametro_anchura = 1000
+diametro_altura = 500
 color_negro = (0, 0, 0)
 color_blango = (255, 255, 255)
 
