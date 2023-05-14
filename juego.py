@@ -48,7 +48,7 @@ def dibujar_texto(superficie, texto, tamaño, x, y):
 class Nave(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = pygame.image.load("player.png").convert()
+        self.image = pygame.image.load("nave.png").convert()
         self.image.set_colorkey(color_negro)
         self.rect = self.image.get_rect() #aqui se optiene la recta o el cuadro del sprite
         self.rect.centerx = ancho // 2 #aqui se pone en pantalla por asi decirlo, falta investigar mas sobre esto
