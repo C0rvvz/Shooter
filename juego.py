@@ -199,7 +199,7 @@ pygame.mixer.music.play(loops=-1) #queremos que se repita infinitamente, si le d
 def interfaz_juego_terminado():
     interfaz.blit(fondo, [0,0])
     dibujar_texto(interfaz, "Deep Galaxy", 65, ancho // 2, alto // 2/3)
-    dibujar_texto(interfaz, "Controles:", 24, ancho // 2, alto // 3)
+    dibujar_texto(interfaz, "Destruye tantos meteoros como puedas", 19, ancho // 2, alto // 3)
     dibujar_texto(interfaz, "Te mueves con las flechas y disparas con la barra espaciadora", 20, ancho // 2, alto // 2)
     dibujar_texto(interfaz, "Presiona una tecla", 15, ancho // 2, alto * 3/4)
     pygame.display.flip()
