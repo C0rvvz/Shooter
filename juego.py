@@ -11,7 +11,6 @@ import pygame, random
 #-----------------------------------------------------------------------
 #variables globales:
 
-puntos = 0
 ancho = 800
 alto = 600
 color_negro = (0, 0, 0)
@@ -194,18 +193,24 @@ pygame.mixer.music.set_volume(0.4)
 
 pygame.mixer.music.play(loops=-1) #queremos que se repita infinitamente, si le damos un valor positivo pues solo se repite ese numero de veces
 
-#--------------------------------------------------------------------------
-#Grupos de objetos movibles
+#--------------------------------------------------------------------
+#Funcion juego terminado
 
-todos_sprites = pygame.sprite.Group()
-todos_meteoros = pygame.sprite.Group()
-todos_disparos = pygame.sprite.Group()
-
-#----------------------------------------------------------------------
-#Variables
-
-nave = Nave()
-todos_sprites.add(nave)
+def interfaz_juego_terminado():
+    interfaz.blit(fondo, [0,0])
+    dibujar_texto(interfaz, "Deep Galaxy", 65, ancho // 2, alto // 2/3)
+    dibujar_texto(interfaz, "Controles:", 24, ancho // 2, alto // 3)
+    dibujar_texto(interfaz, "Te mueves con las flechas y disparas con la barra espaciadora", 20, ancho // 2, alto // 2)
+    dibujar_texto(interfaz, "Presiona una tecla", 15, ancho // 2, alto * 3/4)
+    pygame.display.flip()
+    pausa = True
+    while pausa:
+        tiempo.tick(60)
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                pygame.quit()
+            if evento.type == pygame.KEYDOWN:
+                pausa = False
 
 #---------------------------------------------------------------------
 #Funcion explosiones
@@ -215,21 +220,41 @@ def explosion():
     todos_sprites.add(explosion)
 
 #----------------------------------------------------------------------
-#Cantidad de meteoros
+#Funcion meteoros
 
 def crear_meteoro():
     meteoro = Meteor()
     todos_sprites.add(meteoro)
     todos_meteoros.add(meteoro)
 
-for i in range(8):
-    crear_meteoro()
+#-------------------------------------------------------------------------
+#Juego terminado
+
+juego_terminado = True
 
 #----------------------------------------------------------------------
 # Bucle principal
 
 fps = True
 while fps:
+    if juego_terminado:
+
+        interfaz_juego_terminado()
+
+        juego_terminado = False
+
+        todos_sprites = pygame.sprite.Group()
+        todos_meteoros = pygame.sprite.Group()
+        todos_disparos = pygame.sprite.Group()
+
+        nave = Nave()
+        todos_sprites.add(nave)
+
+        for i in range(8):
+            crear_meteoro()
+
+        puntos = 0
+
     tiempo.tick(60) #Estos son los frames por segundo
     for evento in pygame.event.get():
         if evento.type == pygame.QUIT:
@@ -254,7 +279,7 @@ while fps:
         crear_meteoro()
         explosion()
         if nave.shield <= 0:
-            fps = False
+            juego_terminado = True
         sonido_explosion.play()
 
 
