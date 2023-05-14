@@ -41,7 +41,6 @@ def dibujar_texto(superficie, texto, tamaño, x, y):
     texto_rect.midtop = (x, y)
     superficie.blit(texto_superficie, texto_rect)
 
-
 #----------------------------------------------------------------------
 #Nave:
 
@@ -84,6 +83,7 @@ class Nave(pygame.sprite.Sprite):
         disparo = Disparo(self.rect.centerx, self.rect.top)
         todos_sprites.add(disparo)
         todos_disparos.add(disparo)
+        sonido_laser.play()
 
 
 #------------------------------------------------------------------------
@@ -96,14 +96,14 @@ class Meteor(pygame.sprite.Sprite):
         self.image.set_colorkey(color_negro)
         self.rect = self.image.get_rect()
         self.rect.x = random.randrange(ancho - self.rect.width)
-        self.rect.y = random.randrange(-100, -40)
+        self.rect.y = random.randrange(-140, -100)
         self.speedy = random.randrange(1, 10)
         self.speedx = random.randrange(-5, 5)
 
     def update(self):
         self.rect.y += self.speedy
         self.rect.x += self.speedx
-        if self.rect.top > alto + 10 or self.rect.left < -25 or self.rect.right > ancho + 25:
+        if self.rect.top > alto + 10 or self.rect.left < -40or self.rect.right > ancho + 40:
             self.rect.x = random.randrange(ancho - self.rect.width)
             self.rect.y = random.randrange(-100, -40)
             self.speedy = random.randrange(1, 10)
@@ -126,11 +126,8 @@ class Disparo(pygame.sprite.Sprite):
         if self.rect.bottom < 0:
             self.kill()
 
-# --------------------------------------------------------------------------
-#Variables
-
 #-----------------------------------------------------------------------------
-#imagenes
+#Cargar imagenes
 
 imagenes_meteoros = []
 lista_meteoros = ["meteoro_grande1.png", "meteoro_grande2.png", "meteoro_grande3.png", "meteoro_grande4.png",
@@ -139,26 +136,41 @@ lista_meteoros = ["meteoro_grande1.png", "meteoro_grande2.png", "meteoro_grande3
 for img in lista_meteoros:
     imagenes_meteoros.append(pygame.image.load(img).convert())
 
-
 fondo = pygame.image.load("fondo.png").convert()
 
+#---------------------------------------------------------------------------
+#Sonidos
 
-#----------------------------------------------------------------------------
+sonido_laser = pygame.mixer.Sound("laser_sonido.ogg")
+sonido_explosion = pygame.mixer.Sound("explosion_sonido.wav")
+
+pygame.mixer.music.load("music_sonido.ogg")
+pygame.mixer.music.set_volume(0.4)
+
+pygame.mixer.music.play(loops=-1) #queremos que se repita infinitamente, si le damos un valor positivo pues solo se repite ese numero de veces
+
+#--------------------------------------------------------------------------
+#Grupos de objetos movibles
 
 todos_sprites = pygame.sprite.Group()
 todos_meteoros = pygame.sprite.Group()
 todos_disparos = pygame.sprite.Group()
 
+#----------------------------------------------------------------------
+#Variables
 
 nave = Nave()
 todos_sprites.add(nave)
+
+#----------------------------------------------------------------------
+#Cantidad de meteoros
 
 for i in range(8):
     meteoro = Meteor()
     todos_sprites.add(meteoro)
     todos_meteoros.add(meteoro)
 
-
+#----------------------------------------------------------------------
 # Bucle principal
 
 fps = True
@@ -174,27 +186,28 @@ while fps:
 
     todos_sprites.update()
 
-    coliciones = pygame.sprite.groupcollide(todos_meteoros, todos_disparos, True, True) #esto mira si hay colisiones entre laser y meteoros
+    coliciones = pygame.sprite.groupcollide(todos_meteoros, todos_disparos, True, True) #Esto mira si hay colisiones entre laser y meteoros
     for colicion in coliciones:
         puntos += 10
         meteoro = Meteor()
         todos_sprites.add(meteoro)
         todos_meteoros.add(meteoro)
+        sonido_explosion.play()
 
-    coliciones = pygame.sprite.spritecollide(nave, todos_meteoros, True) #esto mira si hay colisiones en el jugador y meteoros
+    coliciones = pygame.sprite.spritecollide(nave, todos_meteoros, True) #Esto mira si hay colisiones en el jugador y meteoros
     if coliciones:
         running = False
+        sonido_explosion.play()
 
 
-    interfaz.blit(fondo, [0 , 0]) #Es un método que se utiliza para rellenar la superficie de la ventana
-                               # de visualización del juego con un color específico.
+    interfaz.blit(fondo, [0 , 0]) #Es un método que se utiliza para rellenar la superficie de la ventana de visualización del juego con un color específico o fondo si es este caso se le dara una posicion.
 
     todos_sprites.draw(interfaz)
 
     dibujar_texto(interfaz, str(puntos), 25, ancho // 2, 10) #Marcador
 
-    pygame.display.flip() #Este metodo se utiliza para actualizar la ventana de
-                          # visualización del juego
+    pygame.display.flip() #Este metodo se utiliza para actualizar la ventana de visualización del juego
 
-pygame.quit() #Este método se utiliza para cerrar y liberar todos los recursos utilizados
-              # por la biblioteca Pygam
+pygame.quit() #Este método se utiliza para cerrar y liberar todos los recursos utilizados por la biblioteca Pygame
+
+#--------------------------------------------------------------
