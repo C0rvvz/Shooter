@@ -9,23 +9,21 @@
 import pygame, random
 
 #-----------------------------------------------------------------------
-#Estadares para la interfaz:
+#variables globales:
 
-#Falta buscar mas sobre como crearemos la interfaz
-
-WIDTH = 800
-HEIGTH = 600
+ancho = 800
+alto = 600
 color_negro = (0, 0, 0)
 color_blanco = (255, 255, 255)
+interfaz = pygame.display.set_mode((ancho, alto))
+tiempo = pygame.time.Clock()
 
 #-----------------------------------------------------------------------
-#Variables globales:
+#libreria:
 
 pygame.init()
 pygame.mixer.init() #Esto se utiliza para poner musica en el juego
-interfaz = pygame.display.set_mode((WIDTH, HEIGTH))
 pygame.display.set_caption("Call Of Dutty")
-tiempo = pygame.time.Clock()
 
 #----------------------------------------------------------------------
 ##Clases##
@@ -43,8 +41,8 @@ class Nave(pygame.sprite.Sprite):
         self.image = pygame.image.load("player.png").convert()
         self.image.set_colorkey(color_negro)
         self.rect = self.image.get_rect() #aqui se optiene la recta o el cuadro del sprite
-        self.rect.centerx = WIDTH // 2 #aqui se pone en pantalla por asi decirlo, falta investigar mas sobre esto
-        self.rect.bottom = HEIGTH - 10
+        self.rect.centerx = ancho // 2 #aqui se pone en pantalla por asi decirlo, falta investigar mas sobre esto
+        self.rect.bottom = alto - 10
         self.speed_x = 0
         self.speed_y = 0
 
@@ -60,20 +58,22 @@ class Nave(pygame.sprite.Sprite):
             self.speed_y = -7
         if tecla_presionada[pygame.K_DOWN]:
             self.speed_y = 7
-        if self.rect.right > WIDTH:
-            self.rect.right = WIDTH
+        if self.rect.right > ancho:
+            self.rect.right = ancho
         if self.rect.left < 0:
             self.rect.left = 0
         if self.rect.top < 0:
             self.rect.top = 0
-        if self.rect.bottom > HEIGTH:
-            self.rect.bottom = HEIGTH
+        if self.rect.bottom > alto:
+            self.rect.bottom = alto
         self.rect.x += self.speed_x
         self.rect.y += self.speed_y
 
 
-    def disparo(self):
-        pass
+    def shoot(self):
+        disparo = Disparo(self.rect.centerx, self.rect.top)
+        todos_sprites.add(disparo)
+        todos_disparos.add(disparo)
 
 
 #------------------------------------------------------------------------
@@ -81,31 +81,60 @@ class Nave(pygame.sprite.Sprite):
 
 #
 
-class Meteoro(pygame.sprite.Sprite):
+class Meteor(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
+        self.image = pygame.image.load("meteorGrey_big1.png").convert()
+        self.image.set_colorkey(color_negro)
+        self.rect = self.image.get_rect()
+        self.rect.x = random.randrange(ancho - self.rect.width)
+        self.rect.y = random.randrange(-100, -40)
+        self.speedy = random.randrange(1, 10)
+        self.speedx = random.randrange(-5, 5)
 
-    def movimiento(self):
-        pass
+    def update(self):
+        self.rect.y += self.speedy
+        self.rect.x += self.speedx
+        if self.rect.top > alto + 10 or self.rect.left < -25 or self.rect.right > ancho + 25:
+            self.rect.x = random.randrange(ancho - self.rect.width)
+            self.rect.y = random.randrange(-100, -40)
+            self.speedy = random.randrange(1, 10)
 
 #-------------------------------------------------------------------------
 #Disparos:
 
-#
-
 class Disparo(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, x, y):
         super().__init__()
+        self.image = pygame.image.load("laser1.png").convert()
+        self.image.set_colorkey(color_negro)
+        self.rect = self.image.get_rect()
+        self.rect.y = y
+        self.rect.centerx = x
+        self.speedy = -10
 
+    def update(self):
+        self.rect.y += self.speedy
+        if self.rect.bottom < 0:
+            self.kill()
 
 # --------------------------------------------------------------------------
-
 #Variables
 
+fondo = pygame.image.load("background.png").convert()
+
 todos_sprites = pygame.sprite.Group()
+todos_meteoros = pygame.sprite.Group()
+todos_disparos = pygame.sprite.Group()
 
 nave = Nave()
 todos_sprites.add(nave)
+
+for i in range(8):
+    meteoro = Meteor()
+    todos_sprites.add(meteoro)
+    todos_meteoros.add(meteoro)
+
 
 # Bucle principal
 
@@ -116,9 +145,24 @@ while fps:
         if evento.type == pygame.QUIT:
             fps = False
 
+        elif  evento.type == pygame.KEYDOWN:
+            if evento.key == pygame.K_SPACE:
+                nave.shoot()
+
     todos_sprites.update()
 
-    interfaz.fill(color_negro) #Es un método que se utiliza para rellenar la superficie de la ventana
+    coliciones = pygame.sprite.groupcollide(todos_meteoros, todos_disparos, True, True)
+    for colicion in coliciones:
+        meteoro = Meteor()
+        todos_sprites.add(meteoro)
+        todos_meteoros.add(meteoro)
+
+    coliciones = pygame.sprite.spritecollide(nave, todos_meteoros, True)
+    if coliciones:
+        running = False
+
+
+    interfaz.blit(fondo, [0 , 0]) #Es un método que se utiliza para rellenar la superficie de la ventana
                                # de visualización del juego con un color específico.
 
     todos_sprites.draw(interfaz)
