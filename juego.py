@@ -137,6 +137,32 @@ class Disparo(pygame.sprite.Sprite):
         if self.rect.bottom < 0:
             self.kill()
 
+#----------------------------------------------------------------------------
+#Explosion
+
+class Explosion(pygame.sprite.Sprite):
+    def __init__(self, center):
+        super().__init__()
+        self.image = lista_explosion[0]
+        self.rect = self.image.get_rect()
+        self.rect.center = center
+        self.frame = 0 #Es la que aumenta pa que cambie la imagen, es decir cuando fps sea 1, la imagen sera 1 y asi
+        self.last_update = pygame.time.get_ticks() #Pausa el juego de alguna manera para nosotros poder ver los cambios que se estan realizando/cuanto tiempo a transcurrido cuando se esta iniciando
+        self.frame_rate = 50 #Velocidad de la explosion
+
+    def update(self):
+        now = pygame.time.get_ticks() #Cuanto tiempo a transcurrido cuando se crea la ecplosion
+        if now - self.last_update > self.frame_rate:
+            self.last_update = now
+            self.frame += 1
+            if self.frame == len(lista_explosion):
+                self.kill()
+            else:
+                center = self.rect.center
+                self.image = lista_explosion[self.frame] #Va iterando entre la lista
+                self.rect = self.image.get_rect() #Marco de la imagen
+                self.rect.center = center #Centra la imagen
+
 #-----------------------------------------------------------------------------
 #Cargar imagenes
 
@@ -146,6 +172,14 @@ lista_meteoros = ["meteoro_grande1.png", "meteoro_grande2.png", "meteoro_grande3
                   "meteoro_alejandra1.png", "meteoro_alejandra2.png"]
 for img in lista_meteoros:
     imagenes_meteoros.append(pygame.image.load(img).convert())
+
+lista_explosion = []
+for img in range(9):
+    archivo = "regularExplosion0{}.png".format(img)
+    imagen_explosion = pygame.image.load(archivo).convert()
+    imagen_explosion.set_colorkey(color_negro)
+    imagen_escala = pygame.transform.scale(imagen_explosion, (70,70))
+    lista_explosion.append(imagen_escala)
 
 fondo = pygame.image.load("fondo.png").convert()
 
@@ -172,6 +206,13 @@ todos_disparos = pygame.sprite.Group()
 
 nave = Nave()
 todos_sprites.add(nave)
+
+#---------------------------------------------------------------------
+#Funcion explosiones
+
+def explosion():
+    explosion = Explosion(colicion.rect.center)
+    todos_sprites.add(explosion)
 
 #----------------------------------------------------------------------
 #Cantidad de meteoros
@@ -202,6 +243,7 @@ while fps:
 
     coliciones = pygame.sprite.groupcollide(todos_meteoros, todos_disparos, True, True) #Esto mira si hay colisiones entre laser y meteoros
     for colicion in coliciones:
+        explosion()
         puntos += 10
         crear_meteoro()
         sonido_explosion.play()
@@ -210,6 +252,7 @@ while fps:
     for colicion in coliciones:
         nave.shield -= 25
         crear_meteoro()
+        explosion()
         if nave.shield <= 0:
             fps = False
         sonido_explosion.play()
