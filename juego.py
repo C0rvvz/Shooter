@@ -11,8 +11,8 @@ import pygame, random
 #-----------------------------------------------------------------------
 #variables globales:
 
-ancho = 800
-alto = 600
+ancho = 1332
+alto = 750
 color_negro = (0, 0, 0)
 color_blanco = (255, 255, 255)
 color_verde = (0, 255, 0)
@@ -25,11 +25,6 @@ tiempo = pygame.time.Clock()
 pygame.init()
 pygame.mixer.init() #Esto se utiliza para poner musica en el juego
 pygame.display.set_caption("Deep Galaxy")
-
-#----------------------------------------------------------------------
-##Notas##
-
-#
 
 #----------------------------------------------------------------------
 #Texto en juego
@@ -70,13 +65,13 @@ class Nave(pygame.sprite.Sprite):
         self.speed_y = 0
         tecla_presionada = pygame.key.get_pressed()
         if tecla_presionada[pygame.K_LEFT]:
-            self.speed_x = -7
+            self.speed_x = -10
         if tecla_presionada[pygame.K_RIGHT]:
-            self.speed_x = 7
+            self.speed_x = 10
         if tecla_presionada[pygame.K_UP]:
-            self.speed_y = -7
+            self.speed_y = -10
         if tecla_presionada[pygame.K_DOWN]:
-            self.speed_y = 7
+            self.speed_y = 10
         if self.rect.right > ancho:
             self.rect.right = ancho
         if self.rect.left < 0:
@@ -180,7 +175,7 @@ for img in range(9):
     imagen_escala = pygame.transform.scale(imagen_explosion, (70,70))
     lista_explosion.append(imagen_escala)
 
-fondo = pygame.image.load("fondo.png").convert()
+fondo = pygame.image.load("espacio.jpg").convert()
 
 #---------------------------------------------------------------------------
 #Sonidos
@@ -188,18 +183,26 @@ fondo = pygame.image.load("fondo.png").convert()
 sonido_laser = pygame.mixer.Sound("laser_sonido.ogg")
 sonido_explosion = pygame.mixer.Sound("explosion_sonido.wav")
 
-pygame.mixer.music.load("music_sonido.ogg")
-pygame.mixer.music.set_volume(0.4)
+sonido_final = pygame.mixer.Sound("final.mp3")
+sonido_comienzo = pygame.mixer.Sound("comienzo.mp3")
 
-pygame.mixer.music.play(loops=-1) #queremos que se repita infinitamente, si le damos un valor positivo pues solo se repite ese numero de veces
+def sonido_menu():
+    pygame.mixer.music.load("sonido_menu.mp3")
+    pygame.mixer.music.set_volume(0.4)
+    pygame.mixer.music.play(loops=-1)  # queremos que se repita infinitamente, si le damos un valor positivo pues solo se repite ese numero de veces
+
+def sonido_juego():
+    pygame.mixer.music.load("sonido_juego.mp3")
+    pygame.mixer.music.set_volume(0.4)
+    pygame.mixer.music.play(loops=-1)
 
 #--------------------------------------------------------------------
-#Funcion juego terminado
+#Funcion menu
 
-def interfaz_juego_terminado():
+def interfaz_menu():
     interfaz.blit(fondo, [0,0])
     dibujar_texto(interfaz, "Deep Galaxy", 65, ancho // 2, alto // 2/3)
-    dibujar_texto(interfaz, "Controles:", 24, ancho // 2, alto // 3)
+    dibujar_texto(interfaz, "Destruye tantos meteoros como puedas", 19, ancho // 2, alto // 3)
     dibujar_texto(interfaz, "Te mueves con las flechas y disparas con la barra espaciadora", 20, ancho // 2, alto // 2)
     dibujar_texto(interfaz, "Presiona una tecla", 15, ancho // 2, alto * 3/4)
     pygame.display.flip()
@@ -211,6 +214,8 @@ def interfaz_juego_terminado():
                 pygame.quit()
             if evento.type == pygame.KEYDOWN:
                 pausa = False
+
+menu = True
 
 #---------------------------------------------------------------------
 #Funcion explosiones
@@ -227,21 +232,21 @@ def crear_meteoro():
     todos_sprites.add(meteoro)
     todos_meteoros.add(meteoro)
 
-#-------------------------------------------------------------------------
-#Juego terminado
-
-juego_terminado = True
-
 #----------------------------------------------------------------------
 # Bucle principal
 
 fps = True
 while fps:
-    if juego_terminado:
+    if menu:
 
-        interfaz_juego_terminado()
+        sonido_menu()
+        interfaz_menu()
 
-        juego_terminado = False
+        menu = False
+        pygame.mixer.music.stop()
+        sonido_comienzo.play()
+        sonido_juego()
+
 
         todos_sprites = pygame.sprite.Group()
         todos_meteoros = pygame.sprite.Group()
@@ -250,7 +255,7 @@ while fps:
         nave = Nave()
         todos_sprites.add(nave)
 
-        for i in range(8):
+        for i in range(25):
             crear_meteoro()
 
         puntos = 0
@@ -278,9 +283,12 @@ while fps:
         nave.shield -= 25
         crear_meteoro()
         explosion()
-        if nave.shield <= 0:
-            juego_terminado = True
         sonido_explosion.play()
+        if nave.shield <= 0:
+            menu = True
+            sonido_final.play()
+            pygame.mixer.music.stop()
+            sonido_menu()
 
 
     interfaz.blit(fondo, [0 , 0]) #Es un método que se utiliza para rellenar la superficie de la ventana de visualización del juego con un color específico o fondo si es este caso se le dara una posicion.
