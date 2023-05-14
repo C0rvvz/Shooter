@@ -16,6 +16,7 @@ ancho = 800
 alto = 600
 color_negro = (0, 0, 0)
 color_blanco = (255, 255, 255)
+color_verde = (0, 255, 0)
 interfaz = pygame.display.set_mode((ancho, alto))
 tiempo = pygame.time.Clock()
 
@@ -41,7 +42,16 @@ def dibujar_texto(superficie, texto, tamaño, x, y):
     texto_rect.midtop = (x, y)
     superficie.blit(texto_superficie, texto_rect)
 
-#----------------------------------------------------------------------
+def dibujar_barra_salud(superficie, x, y, porcentage):
+    barra_longitud = 100
+    barra_altura = 10
+    relleno = (porcentage / 100) * barra_longitud
+    borde = pygame.Rect(x, y, barra_longitud, barra_altura)
+    relleno = pygame.Rect(x, y, relleno, barra_altura)
+    pygame.draw.rect(superficie, color_verde, relleno)
+    pygame.draw.rect(superficie, color_blanco, borde, 2)
+
+#------------------------------------------------------------------
 #Nave:
 
 class Nave(pygame.sprite.Sprite):
@@ -54,6 +64,7 @@ class Nave(pygame.sprite.Sprite):
         self.rect.bottom = alto - 10
         self.speed_x = 0
         self.speed_y = 0
+        self.shield = 100
 
     def update(self):  #Movimiento
         self.speed_x = 0
@@ -165,10 +176,13 @@ todos_sprites.add(nave)
 #----------------------------------------------------------------------
 #Cantidad de meteoros
 
-for i in range(8):
+def crear_meteoro():
     meteoro = Meteor()
     todos_sprites.add(meteoro)
     todos_meteoros.add(meteoro)
+
+for i in range(8):
+    crear_meteoro()
 
 #----------------------------------------------------------------------
 # Bucle principal
@@ -189,14 +203,15 @@ while fps:
     coliciones = pygame.sprite.groupcollide(todos_meteoros, todos_disparos, True, True) #Esto mira si hay colisiones entre laser y meteoros
     for colicion in coliciones:
         puntos += 10
-        meteoro = Meteor()
-        todos_sprites.add(meteoro)
-        todos_meteoros.add(meteoro)
+        crear_meteoro()
         sonido_explosion.play()
 
     coliciones = pygame.sprite.spritecollide(nave, todos_meteoros, True) #Esto mira si hay colisiones en el jugador y meteoros
-    if coliciones:
-        running = False
+    for colicion in coliciones:
+        nave.shield -= 25
+        crear_meteoro()
+        if nave.shield <= 0:
+            fps = False
         sonido_explosion.play()
 
 
@@ -205,6 +220,8 @@ while fps:
     todos_sprites.draw(interfaz)
 
     dibujar_texto(interfaz, str(puntos), 25, ancho // 2, 10) #Marcador
+
+    dibujar_barra_salud(interfaz, 5, 5, nave.shield) #Coordenadas 5,5 y porcetange es nave.shield
 
     pygame.display.flip() #Este metodo se utiliza para actualizar la ventana de visualización del juego
 
