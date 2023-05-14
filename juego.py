@@ -11,6 +11,7 @@ import pygame, random
 #-----------------------------------------------------------------------
 #variables globales:
 
+puntos = 0
 ancho = 800
 alto = 600
 color_negro = (0, 0, 0)
@@ -23,17 +24,26 @@ tiempo = pygame.time.Clock()
 
 pygame.init()
 pygame.mixer.init() #Esto se utiliza para poner musica en el juego
-pygame.display.set_caption("Call Of Dutty")
+pygame.display.set_caption("Deep Galaxy")
 
 #----------------------------------------------------------------------
-##Clases##
+##Notas##
 
-#falta buscar las imagenes para el juego
+#
 
 #----------------------------------------------------------------------
-#Nave\Jugador:
+#Texto en juego
 
-#Falta buscar sobre como mover la nave
+def dibujar_texto(superficie, texto, tamaño, x, y):
+    fuente = pygame.font.SysFont("serif", tamaño)
+    texto_superficie = fuente.render(texto, True, color_blanco)
+    texto_rect = texto_superficie.get_rect()
+    texto_rect.midtop = (x, y)
+    superficie.blit(texto_superficie, texto_rect)
+
+
+#----------------------------------------------------------------------
+#Nave:
 
 class Nave(pygame.sprite.Sprite):
     def __init__(self):
@@ -79,12 +89,10 @@ class Nave(pygame.sprite.Sprite):
 #------------------------------------------------------------------------
 #Meteoros:
 
-#
-
 class Meteor(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = pygame.image.load("meteorGrey_big1.png").convert()
+        self.image = random.choice(imagenes_meteoros)
         self.image.set_colorkey(color_negro)
         self.rect = self.image.get_rect()
         self.rect.x = random.randrange(ancho - self.rect.width)
@@ -121,11 +129,26 @@ class Disparo(pygame.sprite.Sprite):
 # --------------------------------------------------------------------------
 #Variables
 
-fondo = pygame.image.load("background.png").convert()
+#-----------------------------------------------------------------------------
+#imagenes
+
+imagenes_meteoros = []
+lista_meteoros = ["meteoro_grande1.png", "meteoro_grande2.png", "meteoro_grande3.png", "meteoro_grande4.png",
+                  "meteoro_mediano1.png", "meteoro_mediano2.png", "meteoro_pequeño1.png", "meteoro_pequeño2.png",
+                  "meteoro_alejandra1.png", "meteoro_alejandra2.png"]
+for img in lista_meteoros:
+    imagenes_meteoros.append(pygame.image.load(img).convert())
+
+
+fondo = pygame.image.load("fondo.png").convert()
+
+
+#----------------------------------------------------------------------------
 
 todos_sprites = pygame.sprite.Group()
 todos_meteoros = pygame.sprite.Group()
 todos_disparos = pygame.sprite.Group()
+
 
 nave = Nave()
 todos_sprites.add(nave)
@@ -151,13 +174,14 @@ while fps:
 
     todos_sprites.update()
 
-    coliciones = pygame.sprite.groupcollide(todos_meteoros, todos_disparos, True, True)
+    coliciones = pygame.sprite.groupcollide(todos_meteoros, todos_disparos, True, True) #esto mira si hay colisiones entre laser y meteoros
     for colicion in coliciones:
+        puntos += 10
         meteoro = Meteor()
         todos_sprites.add(meteoro)
         todos_meteoros.add(meteoro)
 
-    coliciones = pygame.sprite.spritecollide(nave, todos_meteoros, True)
+    coliciones = pygame.sprite.spritecollide(nave, todos_meteoros, True) #esto mira si hay colisiones en el jugador y meteoros
     if coliciones:
         running = False
 
@@ -166,6 +190,8 @@ while fps:
                                # de visualización del juego con un color específico.
 
     todos_sprites.draw(interfaz)
+
+    dibujar_texto(interfaz, str(puntos), 25, ancho // 2, 10) #Marcador
 
     pygame.display.flip() #Este metodo se utiliza para actualizar la ventana de
                           # visualización del juego
