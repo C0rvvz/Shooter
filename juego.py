@@ -92,9 +92,27 @@ class Nave(pygame.sprite.Sprite):
 
 
 #------------------------------------------------------------------------
+#Disparos:
+
+class Disparo(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        self.image = pygame.image.load("laser1.png").convert()
+        self.image.set_colorkey(color_negro)
+        self.rect = self.image.get_rect()
+        self.rect.y = y
+        self.rect.centerx = x
+        self.speedy = -10
+
+    def update(self):
+        self.rect.y += self.speedy
+        if self.rect.bottom < 0:
+            self.kill()
+
+#-------------------------------------------------------------------------
 #Meteoros:
 
-class Meteor(pygame.sprite.Sprite):
+class Meteoro(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.image = random.choice(imagenes_meteoros)
@@ -112,24 +130,10 @@ class Meteor(pygame.sprite.Sprite):
             self.rect.x = random.randrange(ancho - self.rect.width)
             self.rect.y = random.randrange(-100, -40)
             self.speedy = random.randrange(1, 10)
-
-#-------------------------------------------------------------------------
-#Disparos:
-
-class Disparo(pygame.sprite.Sprite):
-    def __init__(self, x, y):
-        super().__init__()
-        self.image = pygame.image.load("laser1.png").convert()
-        self.image.set_colorkey(color_negro)
-        self.rect = self.image.get_rect()
-        self.rect.y = y
-        self.rect.centerx = x
-        self.speedy = -10
-
-    def update(self):
-        self.rect.y += self.speedy
-        if self.rect.bottom < 0:
-            self.kill()
+def crear_meteoro():
+    meteoro = Meteoro()
+    todos_sprites.add(meteoro)
+    todos_meteoros.add(meteoro)
 
 #----------------------------------------------------------------------------
 #Explosion
@@ -156,6 +160,10 @@ class Explosion(pygame.sprite.Sprite):
                 self.image = lista_explosion[self.frame] #Va iterando entre la lista
                 self.rect = self.image.get_rect() #Marco de la imagen
                 self.rect.center = center #Centra la imagen
+
+def explosion():
+    explosion = Explosion(colicion.rect.center)
+    todos_sprites.add(explosion)
 
 #-----------------------------------------------------------------------------
 #Cargar imagenes
@@ -216,21 +224,6 @@ def interfaz_menu():
                 pausa = False
 
 menu = True
-
-#---------------------------------------------------------------------
-#Funcion explosiones
-
-def explosion():
-    explosion = Explosion(colicion.rect.center)
-    todos_sprites.add(explosion)
-
-#----------------------------------------------------------------------
-#Funcion meteoros
-
-def crear_meteoro():
-    meteoro = Meteor()
-    todos_sprites.add(meteoro)
-    todos_meteoros.add(meteoro)
 
 #----------------------------------------------------------------------
 # Bucle principal
@@ -295,7 +288,8 @@ while fps:
 
     todos_sprites.draw(interfaz)
 
-    dibujar_texto(interfaz, str(puntos), 25, ancho // 2, 10) #Marcador
+    dibujar_texto(interfaz, str(puntos), 25, ancho // 1.8, 10) #Marcador
+    dibujar_texto(interfaz, str("Puntos:"), 25, ancho // 2, 10)
 
     dibujar_barra_salud(interfaz, 5, 5, nave.shield) #Coordenadas 5,5 y porcetange es nave.shield
 
