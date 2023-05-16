@@ -214,8 +214,6 @@ def interfaz_menu():
     dibujar_texto(interfaz, "Destruye tantos meteoros como puedas", 19, ancho // 2, alto // 3)
     dibujar_texto(interfaz, "Te mueves con las flechas y disparas con la barra espaciadora", 20, ancho // 2, alto // 2)
     dibujar_texto(interfaz, "Presiona una tecla", 15, ancho // 2, alto * 3/4)
-    dibujar_texto(interfaz, "Puntos obtenidos", 19, ancho // 2, alto * 3.5)
-    dibujar_texto(interfaz, puntos, 19, ancho // 2, alto * 3.5)
     pygame.display.flip()
     pausa = True
     while pausa:
@@ -267,11 +265,11 @@ while fps:
     coliciones = pygame.sprite.groupcollide(todos_meteoros, todos_disparos, True, True) #Esto mira si hay colisiones entre laser y meteoros
     for colicion in coliciones:
         explosion()
-        puntos += 15
+        puntos += 10
         numeros = [500, 1000, 1500, 2000]
         for numero in numeros:
             if puntos == numero:
-                cantidad =+ 25
+                cantidad =+ 30
                 for i in range(cantidad):
                     crear_meteoro()
         crear_meteoro()
@@ -288,6 +286,7 @@ while fps:
             sonido_final.play()
             pygame.mixer.music.stop()
             sonido_menu()
+            puntos = 0
 
     interfaz.blit(fondo, [0 , 0]) #Es un método que se utiliza para rellenar la superficie de la ventana de visualización del juego con un color específico o fondo si es este caso se le dara una posicion.
 
