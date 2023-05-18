@@ -60,7 +60,7 @@ class Salud():
 class Nave(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = pygame.image.load("nave.png").convert()
+        self.image = pygame.image.load("multimedia/nave.png").convert()
         self.image.set_colorkey(color_negro)
         self.rect = self.image.get_rect() #aqui se optiene la recta o el cuadro del sprite
         self.rect.centerx = ancho // 2 #aqui se pone en pantalla por asi decirlo, falta investigar mas sobre esto
@@ -106,7 +106,7 @@ class Nave(pygame.sprite.Sprite):
 class Disparo(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
-        self.image = pygame.image.load("laser1.png").convert()
+        self.image = pygame.image.load("multimedia/laser1.png").convert()
         self.image.set_colorkey(color_negro)
         self.rect = self.image.get_rect()
         self.rect.y = y
@@ -200,39 +200,39 @@ menu = True
 
 
 imagenes_meteoros = []
-lista_meteoros = ["meteoro_grande1.png", "meteoro_grande2.png", "meteoro_grande3.png", "meteoro_grande4.png",
-                  "meteoro_mediano1.png", "meteoro_mediano2.png", "meteoro_pequeño1.png", "meteoro_pequeño2.png",
-                  "meteoro_alejandra1.png", "meteoro_alejandra2.png"]
+lista_meteoros = ["multimedia/meteoro_grande1.png", "multimedia/meteoro_grande2.png", "multimedia/meteoro_grande3.png", "multimedia/meteoro_grande4.png",
+                  "multimedia/meteoro_mediano1.png", "multimedia/meteoro_mediano2.png", "multimedia/meteoro_pequeño1.png", "multimedia/meteoro_pequeño2.png",
+                  "multimedia/meteoro_alejandra1.png", "multimedia/meteoro_alejandra2.png"]
 for img in lista_meteoros:
     imagenes_meteoros.append(pygame.image.load(img).convert())
 
 lista_explosion = []
 for img in range(9):
-    archivo = "regularExplosion0{}.png".format(img)
+    archivo = "multimedia/regularExplosion0{}.png".format(img)
     imagen_explosion = pygame.image.load(archivo).convert()
     imagen_explosion.set_colorkey(color_negro)
     imagen_escala = pygame.transform.scale(imagen_explosion, (70,70))
     lista_explosion.append(imagen_escala)
 
-fondo = pygame.image.load("espacio.jpg").convert()
+fondo = pygame.image.load("multimedia/espacio.jpg").convert()
 
 #---------------------------------------------------------------------------
 #Sonidos
 
-sonido_laser = pygame.mixer.Sound("laser_sonido.ogg")
-sonido_explosion = pygame.mixer.Sound("explosion_sonido.wav")
+sonido_laser = pygame.mixer.Sound("multimedia/laser_sonido.ogg")
+sonido_explosion = pygame.mixer.Sound("multimedia/explosion_sonido.wav")
 
-sonido_final = pygame.mixer.Sound("final.mp3")
-sonido_comienzo = pygame.mixer.Sound("comienzo.mp3")
+sonido_final = pygame.mixer.Sound("multimedia/final.mp3")
+sonido_comienzo = pygame.mixer.Sound("multimedia/comienzo.mp3")
 
 
 def sonido_menu():
-    pygame.mixer.music.load("sonido_menu.mp3")
+    pygame.mixer.music.load("multimedia/sonido_menu.mp3")
     pygame.mixer.music.set_volume(0.4)
     pygame.mixer.music.play(loops=-1)  # queremos que se repita infinitamente, si le damos un valor positivo pues solo se repite ese numero de veces
 
 def sonido_juego():
-    pygame.mixer.music.load("sonido_juego.mp3")
+    pygame.mixer.music.load("multimedia/sonido_juego.mp3")
     pygame.mixer.music.set_volume(0.4)
     pygame.mixer.music.play(loops=-1)
 
