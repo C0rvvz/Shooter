@@ -28,23 +28,31 @@ pygame.mixer.init() #Esto se utiliza para poner musica en el juego
 pygame.display.set_caption("Deep Galaxy")
 
 #----------------------------------------------------------------------
-#Texto en juego
+#Marcador
 
-def dibujar_texto(superficie, texto, tamaño, x, y):
-    fuente = pygame.font.SysFont("serif", tamaño)
-    texto_superficie = fuente.render(texto, True, color_blanco)
-    texto_rect = texto_superficie.get_rect()
-    texto_rect.midtop = (x, y)
-    superficie.blit(texto_superficie, texto_rect)
+class Marcador():
+    def __init__(self, superficie, texto, tamaño, x, y):
+        super().__init__()
+        fuente = pygame.font.SysFont("serif", tamaño)
+        texto_superficie = fuente.render(texto, True, color_blanco)
+        texto_rect = texto_superficie.get_rect()
+        texto_rect.midtop = (x, y)
+        superficie.blit(texto_superficie, texto_rect)
 
-def dibujar_barra_salud(superficie, x, y, porcentage):
-    barra_longitud = 100
-    barra_altura = 10
-    relleno = (porcentage / 100) * barra_longitud
-    borde = pygame.Rect(x, y, barra_longitud, barra_altura)
-    relleno = pygame.Rect(x, y, relleno, barra_altura)
-    pygame.draw.rect(superficie, color_verde, relleno)
-    pygame.draw.rect(superficie, color_blanco, borde, 2)
+#_-------------------------------------------------------------------------
+#Salud
+
+class Salud():
+
+    def __init__(self, superficie, x, y, porcentage):
+        super().__init__()
+        barra_longitud = 100
+        barra_altura = 10
+        relleno = (porcentage / 100) * barra_longitud
+        borde = pygame.Rect(x, y, barra_longitud, barra_altura)
+        relleno = pygame.Rect(x, y, relleno, barra_altura)
+        pygame.draw.rect(superficie, color_verde, relleno)
+        pygame.draw.rect(superficie, color_blanco, borde, 2)
 
 #------------------------------------------------------------------
 #Nave:
@@ -166,8 +174,30 @@ def explosion():
     explosion = Explosion(colicion.rect.center)
     todos_sprites.add(explosion)
 
+#--------------------------------------------------------------------
+#Funcion menu
+class Menu():
+    def __init__(self):
+        interfaz.blit(fondo, [0,0])
+        Marcador(interfaz, "Deep Galaxy", 65, ancho // 2, alto // 2/3)
+        Marcador(interfaz, "Destruye tantos meteoros como puedas", 19, ancho // 2, alto // 3)
+        Marcador(interfaz, "Te mueves con las flechas y disparas con la barra espaciadora", 20, ancho // 2, alto // 2)
+        Marcador(interfaz, "Presiona una tecla", 15, ancho // 2, alto * 3/4)
+        pygame.display.flip()
+        pausa = True
+        while pausa:
+            tiempo.tick(60)
+            for evento in pygame.event.get():
+                if evento.type == pygame.QUIT:
+                    pygame.quit()
+                if evento.type == pygame.KEYDOWN:
+                    pausa = False
+menu = True
+
 #-----------------------------------------------------------------------------
 #Cargar imagenes
+
+
 
 imagenes_meteoros = []
 lista_meteoros = ["meteoro_grande1.png", "meteoro_grande2.png", "meteoro_grande3.png", "meteoro_grande4.png",
@@ -195,6 +225,7 @@ sonido_explosion = pygame.mixer.Sound("explosion_sonido.wav")
 sonido_final = pygame.mixer.Sound("final.mp3")
 sonido_comienzo = pygame.mixer.Sound("comienzo.mp3")
 
+
 def sonido_menu():
     pygame.mixer.music.load("sonido_menu.mp3")
     pygame.mixer.music.set_volume(0.4)
@@ -205,27 +236,6 @@ def sonido_juego():
     pygame.mixer.music.set_volume(0.4)
     pygame.mixer.music.play(loops=-1)
 
-#--------------------------------------------------------------------
-#Funcion menu
-
-def interfaz_menu():
-    interfaz.blit(fondo, [0,0])
-    dibujar_texto(interfaz, "Deep Galaxy", 65, ancho // 2, alto // 2/3)
-    dibujar_texto(interfaz, "Destruye tantos meteoros como puedas", 19, ancho // 2, alto // 3)
-    dibujar_texto(interfaz, "Te mueves con las flechas y disparas con la barra espaciadora", 20, ancho // 2, alto // 2)
-    dibujar_texto(interfaz, "Presiona una tecla", 15, ancho // 2, alto * 3/4)
-    pygame.display.flip()
-    pausa = True
-    while pausa:
-        tiempo.tick(60)
-        for evento in pygame.event.get():
-            if evento.type == pygame.QUIT:
-                pygame.quit()
-            if evento.type == pygame.KEYDOWN:
-                pausa = False
-
-menu = True
-
 #----------------------------------------------------------------------
 # Bucle principal
 
@@ -234,7 +244,7 @@ while fps:
     if menu:
 
         sonido_menu()
-        interfaz_menu()
+        Menu()
 
         menu = False
         pygame.mixer.music.stop()
@@ -292,10 +302,11 @@ while fps:
 
     todos_sprites.draw(interfaz)
 
-    dibujar_texto(interfaz, str(puntos), 25, ancho // 1.8, 10) #Marcador
-    dibujar_texto(interfaz, str("Puntos:"), 25, ancho // 2, 10)
+    Marcador(interfaz, str(puntos), 25, ancho // 1.8, 10) #Marcador
+    Marcador(interfaz, str("Puntos:"), 25, ancho // 2, 10)
 
-    dibujar_barra_salud(interfaz, 5, 5, nave.shield) #Coordenadas 5,5 y porcetange es nave.shield
+
+    Salud(interfaz, 5, 5, nave.shield) #Coordenadas 5,5 y porcetange es nave.shield
 
     pygame.display.flip() #Este metodo se utiliza para actualizar la ventana de visualización del juego
 
