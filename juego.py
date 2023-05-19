@@ -28,26 +28,6 @@ pygame.mixer.init() #Esto se utiliza para poner musica en el juego
 pygame.display.set_caption("Deep Galaxy")
 
 #----------------------------------------------------------------------
-#Funcion menu
-class Menu():
-    def __init__(self):
-        interfaz.blit(fondo, [0,0])
-        Marcador(interfaz, "Deep Galaxy", 65, ancho // 2, alto // 2/3)
-        Marcador(interfaz, "Destruye tantos meteoros como puedas", 19, ancho // 2, alto // 3)
-        Marcador(interfaz, "Te mueves con las flechas y disparas con la barra espaciadora", 20, ancho // 2, alto // 2)
-        Marcador(interfaz, "Presiona una tecla", 15, ancho // 2, alto * 3/4)
-        pygame.display.flip()
-        pausa = True
-        while pausa:
-            tiempo.tick(60)
-            for evento in pygame.event.get():
-                if evento.type == pygame.QUIT:
-                    pygame.quit()
-                if evento.type == pygame.KEYDOWN:
-                    pausa = False
-menu = True
-
-#------------------------------------------------------------------
 #Nave:
 class Nave(pygame.sprite.Sprite):
     def __init__(self):
@@ -90,35 +70,8 @@ class Nave(pygame.sprite.Sprite):
         todos_disparos.add(disparo)
         sonido_laser.play()
 
-#--------------------------------------------------------------------------
-#Marcador
-class Marcador():
-    def __init__(self, superficie, texto, tamaño, x, y):
-        super().__init__()
-        fuente = pygame.font.SysFont("serif", tamaño)
-        texto_superficie = fuente.render(texto, True, color_blanco)
-        texto_rect = texto_superficie.get_rect()
-        texto_rect.midtop = (x, y)
-        superficie.blit(texto_superficie, texto_rect)
-
-#--------------------------------------------------------------
-#Salud
-
-class Salud():
-
-    def __init__(self, superficie, x, y, porcentage):
-        super().__init__()
-        barra_longitud = 100
-        barra_altura = 10
-        relleno = (porcentage / 100) * barra_longitud
-        borde = pygame.Rect(x, y, barra_longitud, barra_altura)
-        relleno = pygame.Rect(x, y, relleno, barra_altura)
-        pygame.draw.rect(superficie, color_verde, relleno)
-        pygame.draw.rect(superficie, color_blanco, borde, 2)
-
 #------------------------------------------------------------------------
 #Disparos:
-
 class Disparo(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
@@ -134,9 +87,19 @@ class Disparo(pygame.sprite.Sprite):
         if self.rect.bottom < 0:
             self.kill()
 
+#--------------------------------------------------------------------------
+#Marcador
+class Marcador():
+    def __init__(self, superficie, texto, tamaño, x, y):
+        super().__init__()
+        fuente = pygame.font.SysFont("serif", tamaño)
+        texto_superficie = fuente.render(texto, True, color_blanco)
+        texto_rect = texto_superficie.get_rect()
+        texto_rect.midtop = (x, y)
+        superficie.blit(texto_superficie, texto_rect)
+
 #-------------------------------------------------------------------------
 #Meteoros:
-
 class Meteoro(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
@@ -160,9 +123,22 @@ def crear_meteoro():
     todos_sprites.add(meteoro)
     todos_meteoros.add(meteoro)
 
+# --------------------------------------------------------------
+# Salud
+class Salud():
+
+    def __init__(self, superficie, x, y, porcentage):
+        super().__init__()
+        barra_longitud = 100
+        barra_altura = 10
+        relleno = (porcentage / 100) * barra_longitud
+        borde = pygame.Rect(x, y, barra_longitud, barra_altura)
+        relleno = pygame.Rect(x, y, relleno, barra_altura)
+        pygame.draw.rect(superficie, color_verde, relleno)
+        pygame.draw.rect(superficie, color_blanco, borde, 2)
+
 #----------------------------------------------------------------------------
 #Explosion
-
 class Explosion(pygame.sprite.Sprite):
     def __init__(self, center):
         super().__init__()
@@ -190,6 +166,26 @@ def explosion():
     explosion = Explosion(colicion.rect.center)
     todos_sprites.add(explosion)
 
+#--------------------------------------------------
+#Funcion menu
+class Menu():
+    def __init__(self):
+        interfaz.blit(fondo, [0,0])
+        Marcador(interfaz, "Deep Galaxy", 65, ancho // 2, alto // 2/3)
+        Marcador(interfaz, "Destruye tantos meteoros como puedas", 19, ancho // 2, alto // 3)
+        Marcador(interfaz, "Te mueves con las flechas y disparas con la barra espaciadora", 20, ancho // 2, alto // 2)
+        Marcador(interfaz, "Presiona una tecla", 15, ancho // 2, alto * 3/4)
+        pygame.display.flip()
+        pausa = True
+        while pausa:
+            tiempo.tick(60)
+            for evento in pygame.event.get():
+                if evento.type == pygame.QUIT:
+                    pygame.quit()
+                if evento.type == pygame.KEYDOWN:
+                    pausa = False
+menu = True
+
 #-----------------------------------------------------------------------------
 #Cargar imagenes
 
@@ -211,7 +207,7 @@ for img in range(9):
 fondo = pygame.image.load("multimedia/espacio.jpg").convert()
 
 #---------------------------------------------------------------------------
-#Sonidos
+#Cargar sonidos
 
 sonido_laser = pygame.mixer.Sound("multimedia/laser_sonido.ogg")
 sonido_explosion = pygame.mixer.Sound("multimedia/explosion_sonido.wav")
