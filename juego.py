@@ -25,7 +25,7 @@ tiempo = pygame.time.Clock()
 
 pygame.init()
 pygame.mixer.init() #Esto se utiliza para poner musica en el juego
-pygame.display.set_caption("Deep Galaxy")
+pygame.display.set_caption("ECHO DEEP GALAXY")
 
 #----------------------------------------------------------------------
 #Nave:
@@ -171,8 +171,8 @@ def explosion():
 class Menu():
     def __init__(self):
         interfaz.blit(fondo, [0,0])
-        Marcador(interfaz, "Deep Galaxy", 65, ancho // 2, alto // 2/3)
-        Marcador(interfaz, "Destruye tantos meteoros como puedas", 19, ancho // 2, alto // 3)
+        Marcador(interfaz, "ECHO DEEP GALAXY", 65, ancho // 2, alto // 2/3)
+        Marcador(interfaz, "Destruye tantos desperdicios como puedas", 19, ancho // 2, alto // 3)
         Marcador(interfaz, "Te mueves con las flechas y disparas con la barra espaciadora", 20, ancho // 2, alto // 2)
         Marcador(interfaz, "Presiona una tecla", 15, ancho // 2, alto * 3/4)
         pygame.display.flip()
