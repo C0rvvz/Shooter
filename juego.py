@@ -24,8 +24,17 @@ tiempo = pygame.time.Clock()
 #libreria:
 
 pygame.init()
-pygame.mixer.init() #Esto se utiliza para poner musica en el juego
+# pygame.mixer.init() #Esto se utiliza para poner musica en el juego
 pygame.display.set_caption("ECHO DEEP GALAXY")
+
+try:
+    pygame.mixer.init()
+    sonido_final = pygame.mixer.Sound("multimedia/sonido_final.mp3")
+    sonido_comienzo = pygame.mixer.Sound("multimedia/comienzo.mp3")
+except pygame.error:
+    print("Audio deshabilitado en este entorno.")
+    sonido_final = None
+    sonido_comienzo = None
 
 #----------------------------------------------------------------------
 #Nave:
@@ -68,7 +77,7 @@ class Nave(pygame.sprite.Sprite):
         disparo = Disparo(self.rect.centerx, self.rect.top)
         todos_sprites.add(disparo)
         todos_disparos.add(disparo)
-        sonido_laser.play()
+        #sonido_laser.play()
 
 #------------------------------------------------------------------------
 #Disparos:
@@ -80,7 +89,7 @@ class Disparo(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.y = y
         self.rect.centerx = x
-        self.speedy = -10
+        self.speedy = -50
 
     def update(self):
         self.rect.y += self.speedy
@@ -209,12 +218,8 @@ fondo = pygame.image.load("multimedia/espacio.jpg").convert()
 #---------------------------------------------------------------------------
 #Cargar sonidos
 
-sonido_laser = pygame.mixer.Sound("multimedia/laser_sonido.ogg")
-sonido_explosion = pygame.mixer.Sound("multimedia/explosion_sonido.wav")
-
-sonido_final = pygame.mixer.Sound("multimedia/sonido_final.mp3")
-sonido_comienzo = pygame.mixer.Sound("multimedia/comienzo.mp3")
-
+#sonido_laser = pygame.mixer.Sound("multimedia/laser_sonido.ogg")
+#sonido_explosion = pygame.mixer.Sound("multimedia/explosion_sonido.wav")
 
 def sonido_menu():
     pygame.mixer.music.load("multimedia/sonido_menu.mp3")
@@ -238,7 +243,8 @@ while fps:
 
         menu = False
         pygame.mixer.music.stop()
-        sonido_comienzo.play()
+        if sonido_comienzo:
+            sonido_comienzo.play()
         sonido_juego()
 
         todos_sprites = pygame.sprite.Group()
@@ -273,17 +279,18 @@ while fps:
                 for i in range(cantidad):
                     crear_meteoro()
         crear_meteoro()
-        sonido_explosion.play()
+        #sonido_explosion.play()
 
     coliciones = pygame.sprite.spritecollide(nave, todos_meteoros, True) #Esto mira si hay colisiones en el jugador y meteoros
     for colicion in coliciones:
         nave.shield -= 25
         crear_meteoro()
         explosion()
-        sonido_explosion.play()
+        #sonido_explosion.play()
         if nave.shield <= 0:
             menu = True
-            sonido_final.play()
+            if sonido_final:
+                sonido_final.play()
             pygame.mixer.music.stop()
             sonido_menu()
             puntos = 0

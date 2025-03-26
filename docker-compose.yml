@@ -1,0 +1,8 @@
+version: '3.8'
+services:
+  shooter:
+    image: <dockerhub-username>/shooter:latest
+    ports:
+      - "8000:8000" # Cambia el puerto si es necesario
+    stdin_open: true
+    tty: true
