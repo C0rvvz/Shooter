@@ -36,7 +36,7 @@ def cargar_recursos():
         imagen_escala = pygame.transform.scale(imagen_explosion, (70, 70))
         lista_explosion.append(imagen_escala)
 
-    fondo_menu = pygame.image.load("multimedia/fondo_menu.jpg").convert()
+    fondo_menu = pygame.image.load("multimedia/menu.jpg").convert()
     fondo_juego = pygame.image.load("multimedia/nubes.jpg").convert()
 
     nuevas_imagenes_objetos = []
