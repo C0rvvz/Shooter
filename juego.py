@@ -291,11 +291,37 @@ class Juego:
         pygame.mixer.music.stop()
         if sonido_final:
             sonido_final.play()
-        sonido_menu()
+
+        # Congelar la pantalla y mostrar el mensaje de puntos
+        self.mostrar_pantalla_congelada()
+
+        # Volver al menú al presionar "Enter"
         Menu.mostrar_menu()
         Menu.esperar_entrada()
         self.reset()
         sonido_nivel1()
+
+    def mostrar_pantalla_congelada(self):
+        """
+        Congela la pantalla y muestra los puntos finales con un mensaje.
+        """
+        interfaz.blit(fondo_juego, [0, 0])
+        self.todos_sprites.draw(interfaz)
+        Marcador(interfaz, f"Puntos finales: {self.puntos}", 50, ancho // 2, alto // 3)
+        Marcador(interfaz, "Presiona 'Enter' para volver al menú", 30, ancho // 2, alto // 2)
+        sonido_menu()
+        pygame.display.flip()
+
+        esperando = True
+        while esperando:
+            tiempo.tick(60)
+            for evento in pygame.event.get():
+                if evento.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+                if evento.type == pygame.KEYDOWN:
+                    if evento.key == pygame.K_RETURN:  # Tecla "Enter"
+                        esperando = False
 
     def manejar_transicion(self):
         if self.transicion_progresiva:
@@ -400,7 +426,7 @@ class Menu:
         Marcador(interfaz, "ECHO DEEP GALAXY", 65, ancho // 2, alto // 2 / 3)
         Marcador(interfaz, "Destruye tantos desperdicios como puedas", 19, ancho // 2, alto // 3)
         Marcador(interfaz, "Te mueves con las flechas y disparas con la barra espaciadora", 20, ancho // 2, alto // 2)
-        Marcador(interfaz, "Presiona una tecla para comenzar", 15, ancho // 2, alto * 3 / 4)
+        Marcador(interfaz, "Presiona 'Enter' para comenzar", 15, ancho // 2, alto * 3 / 4)
         pygame.display.flip()
 
     @staticmethod
@@ -413,7 +439,8 @@ class Menu:
                     pygame.quit()
                     exit()
                 if evento.type == pygame.KEYDOWN:
-                    esperando = False
+                    if evento.key == pygame.K_RETURN:  # Tecla "Enter"
+                        esperando = False
 
 # -----------------------------------------------------------------------
 # Función principal
