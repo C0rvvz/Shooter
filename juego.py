@@ -1,98 +1,103 @@
-#--------------------------------------------------------------------
-# Notas:
-# Acuérdense de instalar pygame
-#---------------------------------------------------------------------
+import pygame
+import random
 
-# Importaciones:
-import pygame, random
-
-#-----------------------------------------------------------------------
-# Variables globales:
-puntos = 0
+# -----------------------------------------------------------------------
+# Configuración global
 ancho = 1300
 alto = 700
 color_negro = (0, 0, 0)
 color_blanco = (255, 255, 255)
 color_verde = (0, 255, 0)
-interfaz = pygame.display.set_mode((ancho, alto))
-tiempo = pygame.time.Clock()
 
-# Nueva variable global para el límite de objetos
-max_objetos = 1000  # Número máximo de objetos activos en pantalla
-
-# Nueva variable global para el límite dinámico de objetos
-limite_objetos_actual = 5  # Límite inicial de objetos
-limite_objetos_maximo = 30  # Límite máximo de objetos después de 100 puntos
-incremento_objetos = 1  # Incremento progresivo de objetos
-puntos_umbral = 10  # Puntos necesarios para aumentar el límite
-
-# Nueva variable global para manejar la transición
-transicion_activada = False  # Indica si la transición ya ocurrió
-nuevo_fondo = None  # Variable para el nuevo fondo
-nuevas_imagenes_objetos = []  # Lista para las nuevas imágenes de objetos
-
-# Nueva variable global para manejar la transición progresiva
-transicion_progresiva = False  # Indica si la transición progresiva está activa
-altura_transicion = 0  # Altura inicial de la transición
-
-# Nueva variable global para manejar la opacidad de la transición
-opacidad_transicion = 0  # Opacidad inicial de la transición
-
-# Nueva variable global para manejar los niveles
-nivel = 1  # Nivel inicial
-
-# Diccionario para almacenar los datos de cada nivel
-niveles = {
-    1: {
-        "fondo": "multimedia/nubes.jpg",
-        "objetos": [
-            "multimedia/meteoro_mediano1.png", "multimedia/meteoro_mediano2.png",
-            "multimedia/meteoro_pequeño1.png", "multimedia/meteoro_pequeño2.png",
-            "multimedia/meteoro_muypequeño1.png", "multimedia/meteoro_muypequeño2.png"
-        ]
-    },
-    2: {
-        "fondo": "multimedia/espacio.jpg",
-        "objetos": [
-            "multimedia/meteoro_mediano1.png", "multimedia/meteoro_mediano2.png",
-            "multimedia/meteoro_pequeño1.png", "multimedia/meteoro_pequeño2.png",
-            "multimedia/meteoro_muypequeño1.png", "multimedia/meteoro_muypequeño2.png"
-        ]
-    }
-}
-
-# Nueva variable global para manejar la aparición progresiva de objetos
-progresivo_objetos = False  # Indica si los objetos están apareciendo progresivamente
-tiempo_ultimo_objeto = 0  # Tiempo del último objeto agregado
-intervalo_objetos = 200  # Intervalo en milisegundos entre la aparición de objetos
-
-# Nueva variable global para manejar el incremento de objetos en el nivel 2
-incremento_objetos_nivel_2 = 10  # Incremento progresivo de objetos en el nivel 2
-
-#-----------------------------------------------------------------------
-# Inicialización de Pygame:
+# Inicialización de Pygame
 pygame.init()
 pygame.mixer.init()
+interfaz = pygame.display.set_mode((ancho, alto))
 pygame.display.set_caption("ECHO DEEP GALAXY")
+tiempo = pygame.time.Clock()
 
-try:
-    sonido_final = pygame.mixer.Sound("multimedia/sonido_final.mp3")
-    sonido_comienzo = pygame.mixer.Sound("multimedia/comienzo.mp3")
-except pygame.error:
-    print("Audio deshabilitado en este entorno.")
-    sonido_final = None
-    sonido_comienzo = None
+# -----------------------------------------------------------------------
+# Cargar recursos
+def cargar_recursos():
+    global imagenes_objetos, lista_explosion, fondo_menu, fondo_juego, nuevas_imagenes_objetos
+    imagenes_objetos = []
+    lista_objetos = [
+        "multimedia/meteoro_mediano1.png", "multimedia/meteoro_mediano2.png",
+        "multimedia/meteoro_pequeño1.png", "multimedia/meteoro_pequeño2.png",
+        "multimedia/meteoro_muypequeño1.png", "multimedia/meteoro_muypequeño2.png"
+    ]
+    for img in lista_objetos:
+        imagenes_objetos.append(pygame.image.load(img).convert_alpha())
 
-# Inicialización de la variable `menu`
-menu = True
+    lista_explosion = []
+    for img in range(9):
+        archivo = f"multimedia/regularExplosion0{img}.png"
+        imagen_explosion = pygame.image.load(archivo).convert_alpha()
+        imagen_escala = pygame.transform.scale(imagen_explosion, (70, 70))
+        lista_explosion.append(imagen_escala)
 
-#----------------------------------------------------------------------
-# Clase Nave:
+    fondo_menu = pygame.image.load("multimedia/fondo_menu.jpg").convert()
+    fondo_juego = pygame.image.load("multimedia/nubes.jpg").convert()
+
+    nuevas_imagenes_objetos = []
+    lista_nuevos_objetos = [
+        "multimedia/meteoro_mediano1.png", "multimedia/meteoro_mediano2.png",
+        "multimedia/meteoro_pequeño1.png", "multimedia/meteoro_pequeño2.png",
+        "multimedia/meteoro_muypequeño1.png", "multimedia/meteoro_muypequeño2.png"
+    ]
+    for img in lista_nuevos_objetos:
+        nuevas_imagenes_objetos.append(pygame.image.load(img).convert_alpha())
+
+# -----------------------------------------------------------------------
+# Cargar sonidos
+def cargar_sonidos():
+    global sonido_laser, sonido_explosion, sonido_final, sonido_comienzo, musica_menu, musica_nivel_1, musica_nivel_2
+    try:
+        sonido_laser = pygame.mixer.Sound("multimedia/laser_sonido.ogg")
+        sonido_explosion = pygame.mixer.Sound("multimedia/explosion_sonido.wav")
+        sonido_final = pygame.mixer.Sound("multimedia/sonido_final.mp3")
+        sonido_comienzo = pygame.mixer.Sound("multimedia/comienzo.mp3")
+        musica_menu = "multimedia/sonido_menu.mp3"
+        musica_nivel_1 = "multimedia/sonido_nivel1.mp3"
+        musica_nivel_2 = "multimedia/sonido_nivel2.mp3"
+    except pygame.error:
+        print("Error al cargar sonidos. Audio deshabilitado.")
+        sonido_laser = None
+        sonido_explosion = None
+        sonido_final = None
+        sonido_comienzo = None
+        musica_menu = None
+        musica_nivel_1 = None
+        musica_nivel_2 = None
+
+# -----------------------------------------------------------------------
+# Función para reproducir la música del menú
+def sonido_menu():
+    if musica_menu:
+        pygame.mixer.music.load(musica_menu)
+        pygame.mixer.music.set_volume(0.4)
+        pygame.mixer.music.play(loops=-1)
+
+# Función para reproducir la música del nivel 1
+def sonido_nivel1():
+    if musica_nivel_1:
+        pygame.mixer.music.load(musica_nivel_1)
+        pygame.mixer.music.set_volume(0.4)
+        pygame.mixer.music.play(loops=-1)
+
+# Función para reproducir la música del nivel 2
+def sonido_nivel2():
+    if musica_nivel_2:
+        pygame.mixer.music.load(musica_nivel_2)
+        pygame.mixer.music.set_volume(0.4)
+        pygame.mixer.music.play(loops=-1)
+
+# -----------------------------------------------------------------------
+# Clases del juego
 class Nave(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = pygame.image.load("multimedia/nave.png").convert()
-        self.image.set_colorkey(color_negro)
+        self.image = pygame.image.load("multimedia/nave.png").convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.centerx = ancho // 2
         self.rect.bottom = alto - 10
@@ -117,18 +122,15 @@ class Nave(pygame.sprite.Sprite):
 
     def shoot(self):
         disparo = Disparo(self.rect.centerx, self.rect.top)
-        todos_sprites.add(disparo)
-        todos_disparos.add(disparo)
+        juego.todos_sprites.add(disparo)
+        juego.todos_disparos.add(disparo)
         if sonido_laser:
             sonido_laser.play()
 
-#------------------------------------------------------------------------
-# Clase Disparo:
 class Disparo(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
-        self.image = pygame.image.load("multimedia/laser1.png").convert()
-        self.image.set_colorkey(color_negro)
+        self.image = pygame.image.load("multimedia/laser1.png").convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.y = y
         self.rect.centerx = x
@@ -139,65 +141,25 @@ class Disparo(pygame.sprite.Sprite):
         if self.rect.bottom < 0:
             self.kill()
 
-#--------------------------------------------------------------------------
-# Clase Marcador:
-class Marcador():
-    def __init__(self, superficie, texto, tamaño, x, y):
-        fuente = pygame.font.SysFont("serif", tamaño)
-        texto_superficie = fuente.render(texto, True, color_blanco)
-        texto_rect = texto_superficie.get_rect()
-        texto_rect.midtop = (x, y)
-        superficie.blit(texto_superficie, texto_rect)
-
-#-------------------------------------------------------------------------
-# Clase Objeto:
 class Objeto(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.image = random.choice(imagenes_objetos)
-        # No se necesita set_colorkey porque las imágenes con transparencia ya usan convert_alpha
         self.rect = self.image.get_rect()
-        self.rect.x = random.randrange(ancho - self.rect.width)  # Posición inicial aleatoria en el eje X
-        self.rect.y = random.randrange(-140, -100)  # Posición inicial fuera de la pantalla en el eje Y
-        self.speedy = random.randrange(5, 10)  # Velocidad vertical (más rápida para trayectorias verticales)
-        self.speedx = random.uniform(-2, 2)  # Velocidad horizontal (pequeña inclinación)
+        self.rect.x = random.randrange(ancho - self.rect.width)
+        self.rect.y = random.randrange(-140, -100)
+        self.speedy = random.randrange(5, 10)
+        self.speedx = random.uniform(-2, 2)
 
     def update(self):
-        self.rect.y += self.speedy  # Movimiento vertical
-        self.rect.x += self.speedx  # Movimiento horizontal con inclinación
-        # Si el objeto sale de la pantalla, se reposiciona para regenerarse
+        self.rect.y += self.speedy
+        self.rect.x += self.speedx
         if self.rect.top > alto + 10 or self.rect.left < -40 or self.rect.right > ancho + 40:
             self.rect.x = random.randrange(ancho - self.rect.width)
             self.rect.y = random.randrange(-100, -40)
             self.speedy = random.randrange(5, 10)
             self.speedx = random.uniform(-2, 2)
 
-# Modifica la función `crear_objeto` para garantizar la generación progresiva
-def crear_objeto():
-    """
-    Crea un nuevo objeto si el número actual de objetos en pantalla es menor que `limite_objetos_actual`.
-    """
-    if len(todos_objetos) < limite_objetos_actual:  # Verifica si no se ha alcanzado el límite actual
-        objeto = Objeto()
-        if transicion_activada:  # Usa las nuevas imágenes si la transición ocurrió
-            objeto.image = random.choice(nuevas_imagenes_objetos)
-        todos_sprites.add(objeto)  # Agrega el objeto al grupo de todos los sprites
-        todos_objetos.add(objeto)  # Agrega el objeto al grupo de objetos activos
-
-# --------------------------------------------------------------
-# Clase Salud:
-class Salud():
-    def __init__(self, superficie, x, y, porcentaje):
-        barra_longitud = 100
-        barra_altura = 10
-        relleno = (porcentaje / 100) * barra_longitud
-        borde = pygame.Rect(x, y, barra_longitud, barra_altura)
-        relleno = pygame.Rect(x, y, relleno, barra_altura)
-        pygame.draw.rect(superficie, color_verde, relleno)
-        pygame.draw.rect(superficie, color_blanco, borde, 2)
-
-#----------------------------------------------------------------------------
-# Clase Explosion:
 class Explosion(pygame.sprite.Sprite):
     def __init__(self, center):
         super().__init__()
@@ -221,275 +183,280 @@ class Explosion(pygame.sprite.Sprite):
                 self.rect = self.image.get_rect()
                 self.rect.center = center
 
-def explosion(colicion):
-    explosion = Explosion(colicion.rect.center)
-    todos_sprites.add(explosion)
+class Marcador:
+    def __init__(self, superficie, texto, tamaño, x, y):
+        fuente = pygame.font.SysFont("serif", tamaño)
+        texto_superficie = fuente.render(texto, True, color_blanco)
+        texto_rect = texto_superficie.get_rect()
+        texto_rect.midtop = (x, y)
+        superficie.blit(texto_superficie, texto_rect)
 
-#--------------------------------------------------
-# Clase Menu:
-class Menu():
+class Salud:
+    def __init__(self, superficie, x, y, porcentaje):
+        barra_longitud = 100
+        barra_altura = 10
+        relleno = (porcentaje / 100) * barra_longitud
+        borde = pygame.Rect(x, y, barra_longitud, barra_altura)
+        relleno = pygame.Rect(x, y, relleno, barra_altura)
+        pygame.draw.rect(superficie, color_verde, relleno)
+        pygame.draw.rect(superficie, color_blanco, borde, 2)
+
+# -----------------------------------------------------------------------
+# Clase principal del juego
+class Juego:
     def __init__(self):
+        self.reset()
+
+    def reset(self):
+        global fondo_juego, imagenes_objetos
+        self.todos_sprites = pygame.sprite.Group()
+        self.todos_objetos = pygame.sprite.Group()
+        self.todos_disparos = pygame.sprite.Group()
+        self.nave = Nave()
+        self.todos_sprites.add(self.nave)
+        self.limite_objetos_actual = 5
+        self.puntos = 0
+        self.nivel = 1
+        self.puntos_umbral = 10
+        self.transicion_activada = False
+        self.transicion_progresiva = False
+        self.altura_transicion = 0
+        self.opacidad_transicion = 0
+        self.progresivo_objetos = False
+        self.tiempo_ultimo_objeto = pygame.time.get_ticks()
+        self.intervalo_objetos = 200
+        self.colisiones_activas = True
+
+        # Reset the background and object images to level 1
+        fondo_juego = pygame.image.load("multimedia/nubes.jpg").convert()
+        imagenes_objetos = [
+            pygame.image.load("multimedia/meteoro_mediano1.png").convert_alpha(),
+            pygame.image.load("multimedia/meteoro_mediano2.png").convert_alpha(),
+            pygame.image.load("multimedia/meteoro_pequeño1.png").convert_alpha(),
+            pygame.image.load("multimedia/meteoro_pequeño2.png").convert_alpha(),
+            pygame.image.load("multimedia/meteoro_muypequeño1.png").convert_alpha(),
+            pygame.image.load("multimedia/meteoro_muypequeño2.png").convert_alpha(),
+        ]
+
+        # Create initial objects for level 1
+        for _ in range(self.limite_objetos_actual):
+            self.crear_objeto()
+
+    def crear_objeto(self):
+        if len(self.todos_objetos) < self.limite_objetos_actual:
+            objeto = Objeto()
+            self.todos_sprites.add(objeto)
+            self.todos_objetos.add(objeto)
+
+    def manejar_colisiones(self):
+        if not self.colisiones_activas:
+            return  # Desactiva las colisiones si están deshabilitadas
+
+        # Colisiones entre disparos y objetos
+        colisiones = pygame.sprite.groupcollide(self.todos_objetos, self.todos_disparos, True, True)
+        for colision in colisiones:
+            explosion = Explosion(colision.rect.center)
+            self.todos_sprites.add(explosion)
+            self.puntos += 5
+            self.crear_objeto()
+            if sonido_explosion:  # Reproducir sonido de explosión
+                sonido_explosion.play()
+            if self.puntos >= self.puntos_umbral:
+                self.incrementar_objetos()
+
+        # Activar la transición al nivel 2 si el jugador alcanza 30 puntos
+        if self.puntos >= 30 and not self.transicion_activada and not self.transicion_progresiva:
+            self.transicion_progresiva = True
+            self.colisiones_activas = False  # Desactiva las colisiones
+            self.nave.speed_y = -5  # Mueve la nave hacia arriba
+
+        # Colisiones entre la nave y los objetos
+        colisiones = pygame.sprite.spritecollide(self.nave, self.todos_objetos, True)
+        for colision in colisiones:
+            self.nave.shield -= 25
+            explosion = Explosion(colision.rect.center)
+            self.todos_sprites.add(explosion)
+            self.crear_objeto()
+            if sonido_explosion:  # Reproducir sonido de explosión
+                sonido_explosion.play()
+            if self.nave.shield <= 0:
+                self.perder()
+
+    def incrementar_objetos(self):
+        if self.nivel == 1 and self.limite_objetos_actual < 30:
+            self.limite_objetos_actual += 1
+            self.puntos_umbral += 10
+
+    def perder(self):
+        pygame.mixer.music.stop()
+        if sonido_final:
+            sonido_final.play()
+        sonido_menu()
+        Menu.mostrar_menu()
+        Menu.esperar_entrada()
+        self.reset()
+        sonido_nivel1()
+
+    def manejar_transicion(self):
+        if self.transicion_progresiva:
+            # Mover la nave hacia arriba
+            self.nave.rect.y -= 5
+            if self.nave.rect.bottom <= 0:  # Si la nave sale de la pantalla
+                self.nave.rect.bottom = 0
+
+            # Crear una pantalla negra que baja lentamente
+            self.altura_transicion += 20  # Velocidad de la transición
+            superficie_transicion = pygame.Surface((ancho, self.altura_transicion))
+            superficie_transicion.fill(color_negro)
+            interfaz.blit(superficie_transicion, (0, 0))
+
+            # Si la pantalla negra cubre toda la interfaz
+            if self.altura_transicion >= alto:
+                self.transicion_progresiva = False
+                self.transicion_activada = True
+                self.nivel += 1
+                self.cargar_nivel(self.nivel)
+
+    def cargar_nivel(self, nivel):
+        global fondo_juego, imagenes_objetos
+        if nivel == 2:
+            # Detener la música del nivel 1
+            pygame.mixer.music.stop()
+
+            # Reproducir la música del nivel 2
+            sonido_nivel2()
+
+            # Cambiar el fondo y las imágenes de los objetos
+            fondo_juego = pygame.image.load("multimedia/espacio.jpg").convert()
+            imagenes_objetos = nuevas_imagenes_objetos
+
+            # Centrar la nave en la parte inferior
+            self.nave.rect.centerx = ancho // 2
+            self.nave.rect.bottom = alto
+
+            # Mostrar la pantalla negra saliendo lentamente
+            self.mostrar_salida_pantalla_negra()
+
+            # Mostrar la cuenta regresiva
+            self.mostrar_cuenta_regresiva()
+
+            # Eliminar todos los objetos del nivel 1
+            self.todos_objetos.empty()
+            self.todos_sprites = pygame.sprite.Group(self.nave)  # Reiniciar sprites con solo la nave
+
+            # Generar nuevos objetos para el nivel 2
+            self.respawn_objetos()
+
+            # Reactivar las colisiones
+            self.colisiones_activas = True
+
+    def respawn_objetos(self):
+        """
+        Genera nuevos objetos desde la parte superior de la pantalla.
+        """
+        for _ in range(self.limite_objetos_actual):
+            objeto = Objeto()
+            objeto.image = random.choice(imagenes_objetos)  # Asegurarse de usar las imágenes correctas
+            objeto.rect.y = random.randrange(-140, -100)  # Posición inicial fuera de la pantalla
+            self.todos_sprites.add(objeto)
+            self.todos_objetos.add(objeto)
+
+    def mostrar_salida_pantalla_negra(self):
+        # Crear una pantalla negra que sube lentamente
+        for altura in range(alto, 0, -20):  # Velocidad de la transición
+            superficie_transicion = pygame.Surface((ancho, altura))
+            superficie_transicion.fill(color_negro)
+            interfaz.blit(fondo_juego, [0, 0])  # Dibuja el fondo del nivel 2
+            interfaz.blit(superficie_transicion, (0, alto - altura))
+            pygame.display.flip()
+            pygame.time.delay(50)  # Controlar la velocidad de la transición
+
+    def mostrar_cuenta_regresiva(self):
+        fuente = pygame.font.SysFont("serif", self.nave.rect.height)
+        for numero in range(3, -1, -1):
+            # Mostrar el fondo del nivel 2
+            interfaz.blit(fondo_juego, [0, 0])
+            texto = fuente.render(str(numero), True, color_blanco)
+            texto_rect = texto.get_rect(center=(ancho // 2, alto // 2))
+            interfaz.blit(texto, texto_rect)
+            pygame.display.flip()
+            pygame.time.delay(1000)  # Espera 1 segundo
+
+    def manejar_nivel_2(self):
+        if self.nivel == 2 and self.progresivo_objetos:
+            tiempo_actual = pygame.time.get_ticks()
+            if tiempo_actual - self.tiempo_ultimo_objeto >= self.intervalo_objetos:
+                if len(self.todos_objetos) < self.limite_objetos_actual:
+                    self.crear_objeto()
+                    self.tiempo_ultimo_objeto = tiempo_actual
+                else:
+                    self.progresivo_objetos = False
+
+# Clase Menu
+class Menu:
+    @staticmethod
+    def mostrar_menu():
         interfaz.blit(fondo_menu, [0, 0])
         Marcador(interfaz, "ECHO DEEP GALAXY", 65, ancho // 2, alto // 2 / 3)
         Marcador(interfaz, "Destruye tantos desperdicios como puedas", 19, ancho // 2, alto // 3)
         Marcador(interfaz, "Te mueves con las flechas y disparas con la barra espaciadora", 20, ancho // 2, alto // 2)
-        Marcador(interfaz, "Presiona una tecla", 15, ancho // 2, alto * 3 / 4)
+        Marcador(interfaz, "Presiona una tecla para comenzar", 15, ancho // 2, alto * 3 / 4)
         pygame.display.flip()
-        pausa = True
-        while pausa:
+
+    @staticmethod
+    def esperar_entrada():
+        esperando = True
+        while esperando:
             tiempo.tick(60)
             for evento in pygame.event.get():
                 if evento.type == pygame.QUIT:
                     pygame.quit()
-                    exit()  # Asegura que el programa se cierre correctamente
+                    exit()
                 if evento.type == pygame.KEYDOWN:
-                    pausa = False
+                    esperando = False
 
-#-----------------------------------------------------------------------------
-# Cargar imágenes:
-imagenes_objetos = []
-lista_objetos = ["multimedia/meteoro_mediano1.png", "multimedia/meteoro_mediano2.png", "multimedia/meteoro_pequeño1.png", "multimedia/meteoro_pequeño2.png",
-                 "multimedia/meteoro_muypequeño1.png", "multimedia/meteoro_muypequeño2.png"]
-for img in lista_objetos:
-    imagenes_objetos.append(pygame.image.load(img).convert())
+# -----------------------------------------------------------------------
+# Función principal
+def main():
+    global juego
+    cargar_recursos()
+    cargar_sonidos()
 
-lista_explosion = []
-for img in range(9):
-    archivo = "multimedia/regularExplosion0{}.png".format(img)
-    imagen_explosion = pygame.image.load(archivo).convert()
-    imagen_explosion.set_colorkey(color_negro)
-    imagen_escala = pygame.transform.scale(imagen_explosion, (70, 70))
-    lista_explosion.append(imagen_escala)
+    # Mostrar el menú inicial
+    sonido_menu()
+    Menu.mostrar_menu()
+    Menu.esperar_entrada()
+    pygame.mixer.music.stop()
 
-fondo_menu = pygame.image.load("multimedia/fondo_menu.jpg").convert()
-fondo_juego = pygame.image.load("multimedia/nubes.jpg").convert()
+    # Iniciar el juego
+    juego = Juego()
+    if sonido_comienzo:
+        sonido_comienzo.play()
+    sonido_nivel1()
 
-# Cargar imágenes para la transición
-nuevo_fondo = pygame.image.load("multimedia/espacio.jpg").convert()
-lista_nuevos_objetos = ["multimedia/meteoro_mediano1.png", "multimedia/meteoro_mediano2.png", "multimedia/meteoro_pequeño1.png", "multimedia/meteoro_pequeño2.png",
-                 "multimedia/meteoro_muypequeño1.png", "multimedia/meteoro_muypequeño2.png"]
-for img in lista_nuevos_objetos:
-    nuevas_imagenes_objetos.append(pygame.image.load(img).convert())
+    fps = True
+    while fps:
+        tiempo.tick(60)
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                fps = False
+            elif evento.type == pygame.KEYDOWN:
+                if evento.key == pygame.K_SPACE:
+                    juego.nave.shoot()
 
-# Función para cargar los datos de un nivel
-def cargar_nivel(nivel_actual):
-    """
-    Carga el fondo y las imágenes de los objetos para el nivel especificado.
-    """
-    global fondo_juego, imagenes_objetos
-    datos_nivel = niveles[nivel_actual]
-    fondo_juego = pygame.image.load(datos_nivel["fondo"]).convert()
-    imagenes_objetos = []
-    for img in datos_nivel["objetos"]:
-        # Usa convert_alpha() para todas las imágenes de objetos para soportar transparencia
-        imagenes_objetos.append(pygame.image.load(img).convert_alpha())
+        juego.todos_sprites.update()
+        juego.manejar_colisiones()
+        juego.incrementar_objetos()
+        juego.manejar_transicion()
+        juego.manejar_nivel_2()
 
-#---------------------------------------------------------------------------
-# Cargar sonidos:
-try:
-    sonido_laser = pygame.mixer.Sound("multimedia/laser_sonido.ogg")
-    sonido_explosion = pygame.mixer.Sound("multimedia/explosion_sonido.wav")
-    musica_menu = "multimedia/sonido_menu.mp3"
-    musica_nivel_1 = "multimedia/sonido_nivel1.mp3"
-    musica_nivel_2 = "multimedia/sonido_nivel2.mp3"
-except pygame.error:
-    print("Error al cargar sonidos. Audio deshabilitado.")
-    sonido_laser = None
-    sonido_explosion = None
-    musica_menu = None
-    musica_nivel_1 = None
-    musica_nivel_2 = None
+        interfaz.blit(fondo_juego, [0, 0])
+        juego.todos_sprites.draw(interfaz)
+        Marcador(interfaz, f"Puntos: {juego.puntos}", 25, ancho // 2, 10)
+        Salud(interfaz, 5, 5, juego.nave.shield)
+        pygame.display.flip()
 
-def sonido_menu():
-    pygame.mixer.music.load(musica_menu)
-    pygame.mixer.music.set_volume(0.4)
-    pygame.mixer.music.play(loops=-1)
+    pygame.quit()
 
-def sonido_nivel1():
-    pygame.mixer.music.load(musica_nivel_1)
-    pygame.mixer.music.set_volume(0.4)
-    pygame.mixer.music.play(loops=-1)
-
-def sonido_nivel2():
-    pygame.mixer.music.load(musica_nivel_2)
-    pygame.mixer.music.set_volume(0.4)
-    pygame.mixer.music.play(loops=-1)
-
-#----------------------------------------------------------------------
-# Bucle principal:
-fps = True
-while fps:
-    # Variables iniciales para reiniciar el juego
-    valores_iniciales = {
-        "limite_objetos_actual": 5,
-        "limite_objetos_maximo": 30,
-        "puntos_umbral": 10,
-        "incremento_objetos": 1,
-        "nivel": 1,
-        "puntos": 0,
-        "altura_transicion": 0,
-        "opacidad_transicion": 0,
-    }
-
-    # Reiniciar correctamente el juego
-    if menu and not transicion_progresiva and not transicion_activada:
-        sonido_menu()
-        Menu()
-        menu = False
-        pygame.mixer.music.stop()
-        if sonido_comienzo:
-            sonido_comienzo.play()
-        sonido_nivel1()
-
-        # Reiniciar grupos de sprites
-        todos_sprites = pygame.sprite.Group()
-        todos_objetos = pygame.sprite.Group()
-        todos_disparos = pygame.sprite.Group()
-
-        # Reiniciar variables del juego usando los valores iniciales
-        nave = Nave()
-        todos_sprites.add(nave)
-        limite_objetos_actual = valores_iniciales["limite_objetos_actual"]
-        limite_objetos_maximo = valores_iniciales["limite_objetos_maximo"]
-        puntos_umbral = valores_iniciales["puntos_umbral"]
-        incremento_objetos = valores_iniciales["incremento_objetos"]
-        nivel = valores_iniciales["nivel"]
-        puntos = valores_iniciales["puntos"]
-        altura_transicion = valores_iniciales["altura_transicion"]
-        opacidad_transicion = valores_iniciales["opacidad_transicion"]
-        transicion_activada = False
-        transicion_progresiva = False
-        cargar_nivel(nivel)  # Carga los datos del nivel 1
-
-        # Generar los objetos iniciales
-        for i in range(limite_objetos_actual):
-            crear_objeto()
-
-    tiempo.tick(60)
-    for evento in pygame.event.get():
-        if evento.type == pygame.QUIT:
-            fps = False
-        elif evento.type == pygame.KEYDOWN:
-            if evento.key == pygame.K_SPACE:
-                nave.shoot()
-    todos_sprites.update()
-    # Detener el conteo de puntos si la transición está activa
-    if not transicion_progresiva and not transicion_activada:
-        # Manejo de colisiones entre disparos y objetos
-        coliciones = pygame.sprite.groupcollide(todos_objetos, todos_disparos, True, True)
-        for colicion in coliciones:
-            explosion(colicion)
-            puntos += 5
-            crear_objeto()  # Generar un nuevo objeto al destruir uno
-            if sonido_explosion:
-                sonido_explosion.play()
-        # Manejo de colisiones entre la nave y los objetos
-        coliciones = pygame.sprite.spritecollide(nave, todos_objetos, True)
-        for colicion in coliciones:
-            nave.shield -= 25
-            explosion(colicion)
-            crear_objeto()  # Generar un nuevo objeto al colisionar con la nave
-            if sonido_explosion:
-                sonido_explosion.play()
-            if nave.shield <= 0:
-                menu = True
-                if sonido_final:
-                    sonido_final.play()
-                pygame.mixer.music.stop()
-                sonido_menu()
-                puntos = 0
-    # Incrementar progresivamente el límite de objetos
-    if puntos >= puntos_umbral and limite_objetos_actual < limite_objetos_maximo:
-        limite_objetos_actual += incremento_objetos
-        puntos_umbral += 5  # Aumenta el umbral para el siguiente incremento
-
-    # Asegurar que siempre haya `limite_objetos_actual` en pantalla
-    while len(todos_objetos) < limite_objetos_actual:
-        crear_objeto()
-
-    # Dibujar el fondo actual y los sprites
-    interfaz.blit(fondo_juego, [0, 0])
-    todos_sprites.draw(interfaz)
-
-    # Mostrar el número actual de objetos en pantalla
-    Marcador(interfaz, f"Objetos en pantalla: {len(todos_objetos)}", 25, ancho // 2, 40)
-
-    # Manejar la transición progresiva
-    if transicion_progresiva:
-        altura_transicion += 30  # Incrementa la altura del rectángulo negro más rápido
-        opacidad_transicion = min(opacidad_transicion + 15, 255)  # Incrementa la opacidad más rápido
-        # Crear una superficie negra semi-transparente
-        superficie_transicion = pygame.Surface((ancho, altura_transicion))
-        superficie_transicion.set_alpha(opacidad_transicion)  # Establece la opacidad
-        superficie_transicion.fill(color_negro)  # Llena la superficie con negro
-        interfaz.blit(superficie_transicion, (0, 0))  # Dibuja la superficie en la pantalla
-        # Cambiar la música progresivamente
-        if altura_transicion == 30:  # Inicia el fadeout de la música actual al comienzo de la transición
-            pygame.mixer.music.fadeout(2000)  # Desvanece la música actual en 2 segundos
-        if altura_transicion >= alto:  # Si el rectángulo cubre toda la pantalla
-            transicion_progresiva = False
-            transicion_activada = True
-            nivel += 1  # Cambia al siguiente nivel
-            cargar_nivel(nivel)  # Carga los datos del nuevo nivel
-            # Eliminar todos los objetos del nivel 1
-            todos_objetos.empty()  # Vaciar el grupo de objetos
-            limite_objetos_actual = 0  # Reiniciar el límite de objetos
-            puntos_umbral = 5  # Reiniciar el umbral de puntos para el nivel 2
-            # Configurar la aparición progresiva de objetos
-            progresivo_objetos = True
-            tiempo_ultimo_objeto = pygame.time.get_ticks()  # Reinicia el temporizador
-            sonido_comienzo.play()
-            pygame.mixer.music.load(musica_nivel_2)  # Carga la música del nivel 2
-            pygame.mixer.music.play(loops=-1, fade_ms=2000)  # Inicia la música con un fade-in de 2 segundos
-
-    # Manejar la aparición progresiva de objetos al inicio del nivel 2
-    if progresivo_objetos:
-        tiempo_actual = pygame.time.get_ticks()
-        if tiempo_actual - tiempo_ultimo_objeto >= intervalo_objetos:
-            if len(todos_objetos) < limite_objetos_actual:  # Agregar objetos progresivamente
-                crear_objeto()
-                tiempo_ultimo_objeto = tiempo_actual  # Actualizar el tiempo del último objeto agregado
-            else:
-                progresivo_objetos = False  # Finalizar la aparición progresiva cuando se alcance el límite
-
-    # Incrementar progresivamente el límite de objetos en el nivel 2
-    if nivel == 2 and puntos >= puntos_umbral and limite_objetos_actual < limite_objetos_maximo:
-        limite_objetos_actual += incremento_objetos_nivel_2
-        puntos_umbral += 5  # Aumenta el umbral para el siguiente incremento
-
-    # Manejo de colisiones entre disparos y objetos
-    coliciones = pygame.sprite.groupcollide(todos_objetos, todos_disparos, True, True)
-    for colicion in coliciones:
-        explosion(colicion)
-        if not transicion_progresiva and not transicion_activada:  # Solo contar puntos fuera de la transición
-            puntos += 5
-        crear_objeto()  # Generar un nuevo objeto al destruir uno
-        if sonido_explosion:
-            sonido_explosion.play()
-
-    # Manejo de colisiones entre la nave y los objetos
-    coliciones = pygame.sprite.spritecollide(nave, todos_objetos, True)
-    for colicion in coliciones:
-        nave.shield -= 25
-        explosion(colicion)
-        crear_objeto()  # Generar un nuevo objeto al colisionar con la nave
-        if sonido_explosion:
-            sonido_explosion.play()
-        if nave.shield <= 0:
-            menu = True
-            if sonido_final:
-                sonido_final.play()
-            pygame.mixer.music.stop()
-            sonido_menu()
-            puntos = 0
-
-    # Activar la transición progresiva al alcanzar 1000 puntos y cambiar al nivel 2
-    if puntos >= 1000 and nivel == 1 and not transicion_activada and not transicion_progresiva:
-        transicion_progresiva = True
-
-    Marcador(interfaz, str(puntos), 25, ancho // 1.8, 10)
-    Marcador(interfaz, str("Puntos:"), 25, ancho // 2, 10)
-    Salud(interfaz, 5, 5, nave.shield)
-    pygame.display.flip()
-
-pygame.quit()
+if __name__ == "__main__":
+    main()
