@@ -381,10 +381,10 @@ class Menu:
     @staticmethod
     def mostrar_menu():
         interfaz.blit(fondo_menu, [0, 0])
-        Marcador(interfaz, "ECHO DEEP GALAXY", 65, ancho // 2, alto // 2 / 3)
-        Marcador(interfaz, "Destruye tantos desperdicios como puedas", 19, ancho // 2, alto // 3)
-        Marcador(interfaz, "Te mueves con las flechas y disparas con la barra espaciadora", 20, ancho // 2, alto // 2)
-        Marcador(interfaz, "Presiona 'Enter' para comenzar", 15, ancho // 2, alto * 3 / 4)
+        Marcador(interfaz, "ECHO DEEP GALAXY", 65, ancho // 2, alto // 2 / 5)
+        Marcador(interfaz, "Destruye tantos desperdicios como puedas", 19, ancho // 2, alto // 5)
+        Marcador(interfaz, "Te mueves con las flechas y disparas con la barra espaciadora", 25, ancho // 2, alto * 4.4 / 5)
+        Marcador(interfaz, "Presiona 'Enter' para comenzar", 15, ancho // 2, alto * 2 / 4)
         pygame.display.flip()
 
     @staticmethod
