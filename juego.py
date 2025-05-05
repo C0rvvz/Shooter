@@ -420,7 +420,7 @@ class Juego:
 
         if nivel == 4:
             pygame.mixer.music.stop()
-            sonido_nivel3()  
+            sonido_nivel4()  
             try:
                 fondo_juego = fondo_nivel_4  
             except pygame.error as e:
