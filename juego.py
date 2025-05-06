@@ -157,6 +157,7 @@ class Tanque(pygame.sprite.Sprite):
         self.image = pygame.image.load("multimedia/tanque.png").convert_alpha()
         self.image = pygame.transform.scale(self.image, (150, 150)) 
         self.rect = self.image.get_rect()
+        self.rect.inflate_ip(-30, -30)  # Reduce el área de colisión en 30 píxeles en ambos ejes
         self.rect.centerx = ancho // 2
         self.rect.bottom = alto - 10
         self.speed_x = 0
@@ -347,6 +348,7 @@ class Juego:
         self.todos_sprites.draw(interfaz)
         Marcador(interfaz, f"Puntos finales: {self.puntos}", 50, ancho // 2, alto // 3)
         Marcador(interfaz, "Presiona 'Enter' para volver al menú", 30, ancho // 2, alto // 2)
+        sonido_final.play()
         sonido_menu()
         pygame.display.flip()
 
@@ -358,7 +360,8 @@ class Juego:
                     pygame.quit()
                     exit()
                 if evento.type == pygame.KEYDOWN:
-                    if evento.key == pygame.K_RETURN:  
+                    if evento.key == pygame.K_RETURN: 
+                        sonido_comienzo.play() 
                         esperando = False
 
     def manejar_transicion(self):
